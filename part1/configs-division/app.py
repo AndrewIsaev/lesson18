@@ -8,7 +8,7 @@
 # Шаг 1.
 # Сохраните на сайте https://jsonkeeper.com/
 # следующий json:
-#
+# #
 # [
 #   {
 #     "name": "iphone 11",
@@ -26,7 +26,7 @@
 #     "price": 30000
 #   }
 # ]
-#
+# #
 #
 # Шаг 2.
 #
@@ -57,13 +57,20 @@
 import requests
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from config import Config
+from setup_db import db
 
-app = Flask(__name__)
 
-app.url_map.strict_slashes = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:' # TODO cохраните данные настройки 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False         # в классе Сonfig файла config.py
-db = SQLAlchemy(app)
+def create_app(config: Config):
+    app = Flask(__name__)
+    app.config.from_object(config)
+    app.url_map.strict_slashes = False
+    app.app_context().push()
+    return app
+
+app_config=Config()
+app = create_app(app_config)
+db.init_app(app)
 
 
 class Phone(db.Model):
@@ -79,7 +86,7 @@ db.create_all()
 
 @app.route("/import")
 def import_data():
-    data = requests.get(url='https://jsonkeeper.com/b/QBYO') # TODO Здесь добавьте ссылку на внешнее хранилище
+    data = requests.get(url=app.config.get("API_URL"))
     for d in data.json():
         p = Phone(**d)
         with db.session.begin():
@@ -99,4 +106,4 @@ def phones():
 
 
 if __name__ == '__main__':
-    app.run(host="localhost", port=10001, debug=True)
+    app.run(host="localhost", port=5000, debug=True)

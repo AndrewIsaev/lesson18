@@ -25,7 +25,7 @@ db.create_all()
 
 @app.route("/import")
 def import_data():
-    data = requests.get(url=app.config.get("API_URL"))
+    data = requests.get(url=app.config.get("API_URL"),verify=False)
     for d in data.json():
         p = Phone(**d)
         with db.session.begin():
@@ -45,5 +45,5 @@ def phones():
 
 
 if __name__ == '__main__':
-    app.run(host="localhost", port=10001, debug=True)
+    app.run(host="localhost", port=10002, debug=True)
 
